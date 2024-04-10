@@ -100,18 +100,32 @@ _更多信息，请前往 [AlterShield文档](https://traas-stack.github.io/alte
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
+## 已知用户
+AlterShield的用户或者已经深入交流过的用户。
+<div>
+<a href="https://www.antgroup.com/">
+  <img alt="蚂蚁集团" src="https://github.com/traas-stack/altershield/blob/main/docs/logo/antgroup_logo.png" height="60" />
+</a>
+<img alt="BiliBili" src="https://github.com/traas-stack/altershield/blob/main/docs/logo/bilibili_logo.png" height="60" />
+<a href="https://www.chinaunicom.com.cn/">
+  <img alt="中国联通" src="https://github.com/traas-stack/altershield/blob/main/docs/logo/chinaunicom_logo.png" height="60" />
+</a>
+<a href="https://github.com/vipshop">
+  <img alt="唯品会" src="https://github.com/traas-stack/altershield/blob/main/docs/logo/vipshop_logo.png" height="60" />
+</a>
+</div>
 <!-- CONTRIBUTING -->
+
 ## 社区建设
 
 作为开源社区，我们欢迎各种形式的贡献，您可以参与到社区的共建的形式包括但不限于：
-- 错别字修正：帮助我们指正文档中的错误。 
+- 错别字修正：帮助我们指正文档中的错误。
 - 文档翻译：帮助我们将文档翻译成您国家的语言，包含英文。
-- 问题及案例探讨：您公司中的变更故障案例，脱敏后可参与讨论，一期探讨解决方案。 
-- Bug提交：帮助我们指出 AlterShield 中逻辑错误的地方。 
-- 新功能场景探讨：任何 AlterShield 还不具备的变更领域功能，都可以一起讨论。 
-- 完善 OCMS 协议：目前 OCMS 开源还处于0.1版本，如果在您的场景下有不能适配的情况，您可以直接参与讨论及扩充。 
-- 对接更多监控工具：您可以将您所使用的监控工具对接到 AlterShield 提供的可观测性防御能力中，扩展 AlterShield 的检测能力范围。 
+- 问题及案例探讨：您公司中的变更故障案例，脱敏后可参与讨论，一期探讨解决方案。
+- Bug提交：帮助我们指出 AlterShield 中逻辑错误的地方。
+- 新功能场景探讨：任何 AlterShield 还不具备的变更领域功能，都可以一起讨论。
+- 完善 OCMS 协议：目前 OCMS 开源还处于0.1版本，如果在您的场景下有不能适配的情况，您可以直接参与讨论及扩充。
+- 对接更多监控工具：您可以将您所使用的监控工具对接到 AlterShield 提供的可观测性防御能力中，扩展 AlterShield 的检测能力范围。
 - 沉淀您的变更防御专家经验：您可以以Plugin、SPI扩展的形式，将您的变更防御专家经验沉淀到 AlterShield 中。
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

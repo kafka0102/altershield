@@ -47,7 +47,7 @@
 
 If you want to learn more about AlterShield's practice in the field of change management, please read [article]().
 
-AlterShield is a change management solution that effectively prevents change-related risks and production environment failures. 
+AlterShield is a change management solution that effectively prevents change-related risks and production environment failures.
 
 It is an open-source version of Ant Group's internal change management platform OpsCloud. It incorporates Ant Group's accumulated change management technology, products, and methodologies in large-scale corporate changes. In complex business scenarios, it provides lifecycle awareness, change defense, and change interruption capabilities during the change process.
 
@@ -55,7 +55,7 @@ AlterShield proposes the Open Change Management Specification (OCMS), which help
 
 ### What is Open Change Management Specification
 
-Open Change Management Specification (OCMS) is an information technology agreement developed by AlterShield for defining change information and unifying perception and control of changes. This protocol is based on the summary and induction of thousands of change scenarios in Ant Group and is still in its early stages. This part is also open to everyone for further development. At this stage, it includes the following content: 
+Open Change Management Specification (OCMS) is an information technology agreement developed by AlterShield for defining change information and unifying perception and control of changes. This protocol is based on the summary and induction of thousands of change scenarios in Ant Group and is still in its early stages. This part is also open to everyone for further development. At this stage, it includes the following content:
 
 - A set of change information models defining the information structure required for change control, which is used in subsequent processes such as change information sensing, change defense, and change measurement
 - A set of change access SDKs that extend a pre- or post-step in each change step for abnormal detection, thus ensuring effective change defense.
@@ -104,6 +104,22 @@ We will continue to add to the RoadMap.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
+
+## Known Users
+Users of AlterShield or those who have already had in-depth communication.
+<div>
+<a href="https://www.antgroup.com/">
+  <img alt="antgroup" src="https://github.com/traas-stack/altershield/blob/main/docs/logo/antgroup_logo.png" height="60" />
+</a>
+<img alt="BiliBili" src="https://github.com/traas-stack/altershield/blob/main/docs/logo/bilibili_logo.png" height="60" />
+<a href="https://www.chinaunicom.com.cn/">
+  <img alt="chinaunicom" src="https://github.com/traas-stack/altershield/blob/main/docs/logo/chinaunicom_logo.png" height="60" />
+</a>
+<a href="https://github.com/vipshop">
+  <img alt="vipshop" src="https://github.com/traas-stack/altershield/blob/main/docs/logo/vipshop_logo.png" height="60" />
+</a>
+</div>
+
 ## Contributing
 
 As an open-source community, we welcome all forms of contribution, including but not limited to:

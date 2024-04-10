@@ -1,4 +1,27 @@
 /*
+ * MIT License
+ *
+ * Copyright (c) [2023]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+/*
  * Ant Group
  * Copyright (c) 2004-2023 All Rights Reserved.
  */
@@ -7,11 +30,16 @@ package com.alipay.altershield.shared.pluginmarket.innerplugin.defender;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alipay.altershield.common.constant.AlterShieldConstant;
 import com.alipay.altershield.common.logger.Loggers;
+import com.alipay.altershield.common.util.DateUtil;
 import com.alipay.altershield.common.util.HttpUtils;
 import com.alipay.altershield.framework.common.util.logger.AlterShieldLoggerManager;
+import com.alipay.altershield.shared.defender.result.DefenderTaskResult;
+import com.alipay.altershield.shared.pluginmarket.annotations.PluginAutowired;
 import com.alipay.altershield.spi.defender.DefenderAsyncDetectPlugin;
 import com.alipay.altershield.spi.defender.model.enums.DefenderStatusEnum;
+import com.alipay.altershield.spi.defender.model.request.ChangeExecuteInfo;
 import com.alipay.altershield.spi.defender.model.request.ChangeInfluenceInfo;
 import com.alipay.altershield.spi.defender.model.request.DefenderDetectPluginRequest;
 import com.alipay.altershield.spi.defender.model.result.DefenderDetectPluginResult;
@@ -23,11 +51,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Time series monitor metric abnormally detection plugin
@@ -37,7 +64,7 @@ import java.util.Map.Entry;
  */
 public class MonitorMetricDetectionPlugin implements DefenderAsyncDetectPlugin {
 
-    @Autowired
+    @PluginAutowired("defenderThreadPool")
     private ThreadPoolTaskExecutor defenderThreadPool;
 
     /**
@@ -65,11 +92,9 @@ public class MonitorMetricDetectionPlugin implements DefenderAsyncDetectPlugin {
     private static final long DEFAULT_BACKTRACE_TIME = 30 * 60 * 1000;
     private static final long DEFAULT_QUERY_INTERVAL_TIME = 30 * 1000;
 
-    @Value("${algorithm_host}")
-    private String algorithmHost;
+    private final String algorithmHost = "http://192.168.103.242:8083";
 
-    @Value("${monitor_client_host}")
-    private String monitorClientHost;
+    private final String monitorClientHost = "http://192.168.123.218:8080";
 
     @Override
     public DefenderDetectPluginResult submitDetectTask(DefenderDetectPluginRequest request) {
@@ -88,12 +113,12 @@ public class MonitorMetricDetectionPlugin implements DefenderAsyncDetectPlugin {
         if (CollectionUtils.isEmpty(seriesDatas)) {
             return DefenderDetectPluginResult.exception("Cannot detect with empty time series data");
         }
-
         return invokeAlgorithmDetection(request, checkTime, seriesDatas);
     }
 
     private Map<MetricFieldEnum, JSONArray> queryTimeSeriesData(DefenderDetectPluginRequest req, long checkEndTime) {
-        Map<MetricFieldEnum, JSONArray> resultMap = new HashMap<>(MetricFieldEnum.values().length);
+        ConcurrentHashMap<MetricFieldEnum, JSONArray> resultMap = new ConcurrentHashMap<>();
+        CountDownLatch latch = new CountDownLatch(MetricFieldEnum.values().length);
         for (MetricFieldEnum item : MetricFieldEnum.values()) {
             QueryTimeSeriesDataRequest request = new QueryTimeSeriesDataRequest();
             request.setType(SERIES_QUERY_TYPE);
@@ -103,8 +128,8 @@ public class MonitorMetricDetectionPlugin implements DefenderAsyncDetectPlugin {
             request.setEnd(checkEndTime);
             request.setDuration(DEFAULT_QUERY_INTERVAL_TIME);
 
-            ChangeInfluenceInfo influenceInfo = req.getChangeInfluenceInfo();
-            Map<String, Object> extInfo = influenceInfo.getExtInfo();
+            ChangeExecuteInfo executeInfo = req.getChangeExecuteInfo();
+            Map<String, Object> extInfo = executeInfo.getExtInfo();
             String namespace = String.valueOf(extInfo.getOrDefault(NAMESPACE, null));
             String workloadType = String.valueOf(extInfo.getOrDefault(WORKLOAD_TYPE, null));
             String workloadName = String.valueOf(extInfo.getOrDefault(WORKLOAD_NAME, null));
@@ -125,26 +150,38 @@ public class MonitorMetricDetectionPlugin implements DefenderAsyncDetectPlugin {
             request.setWorkloadExternalQuery(queryDetail);
 
             defenderThreadPool.execute(() -> {
-                String response = HttpUtils.doPost(monitorClientHost + QUERY_SERIES_DATA_URL,
-                        JSONObject.parseObject(JSONObject.toJSONString(request)), null);
-                if (StringUtils.isBlank(response)) {
-                    AlterShieldLoggerManager.log("error", Loggers.DEFENDER_PLUGIN, "MonitorMetricDetectionPlugin",
-                            "queryTimeSeriesData", "Query result is empty", req.getNodeId(), item.getField());
-                }
+                try {
+                    String response = HttpUtils.doPost(monitorClientHost + QUERY_SERIES_DATA_URL,
+                            JSONObject.parseObject(JSONObject.toJSONString(request)), null);
+                    if (StringUtils.isBlank(response)) {
+                        AlterShieldLoggerManager.log("error", Loggers.DEFENDER_PLUGIN, "MonitorMetricDetectionPlugin",
+                                "queryTimeSeriesData", "Query result is empty", req.getNodeId(), item.getField());
+                    }
 
-                JSONObject result = JSON.parseObject(response);
-                if (CollectionUtils.isEmpty(result)) {
-                    AlterShieldLoggerManager.log("error", Loggers.DEFENDER_PLUGIN, "MonitorMetricDetectionPlugin",
-                            "queryTimeSeriesData", "Query result is empty", req.getNodeId(), item.getField(), response);
-                }
+                    JSONObject result = JSON.parseArray(response).getJSONObject(0);
+                    if (CollectionUtils.isEmpty(result)) {
+                        AlterShieldLoggerManager.log("error", Loggers.DEFENDER_PLUGIN, "MonitorMetricDetectionPlugin",
+                                "queryTimeSeriesData", "Query result is empty", req.getNodeId(), item.getField(), response);
+                    }
 
-                if (!result.containsKey(POINTS)) {
-                    AlterShieldLoggerManager.log("error", Loggers.DEFENDER_PLUGIN, "MonitorMetricDetectionPlugin",
-                            "queryTimeSeriesData", "Invalid result", req.getNodeId(), item.getField(), response);
+                    if (!result.containsKey(POINTS)) {
+                        AlterShieldLoggerManager.log("error", Loggers.DEFENDER_PLUGIN, "MonitorMetricDetectionPlugin",
+                                "queryTimeSeriesData", "Invalid result", req.getNodeId(), item.getField(), response);
+                    }
+                    resultMap.put(item, result.getJSONArray(POINTS));
+                } catch (Exception e) {
+                    AlterShieldLoggerManager.log("error", Loggers.DEFENDER_PLUGIN, e,
+                            "MonitorMetricDetectionPlugin", "queryTimeSeriesData", "fail");
+                } finally {
+                    latch.countDown();
                 }
-
-                resultMap.put(item, result.getJSONArray(POINTS));
             });
+        }
+        try {
+            latch.await();  // Wait for all tasks to complete
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Restore interrupted status
+            throw new RuntimeException("Thread was interrupted", e);
         }
         return resultMap;
     }
@@ -155,9 +192,8 @@ public class MonitorMetricDetectionPlugin implements DefenderAsyncDetectPlugin {
         request.setChangeStart(req.getChangeExecuteInfo().getChangeStartTime().getTime());
         request.setChangeEnd(req.getChangeExecuteInfo().getChangeFinishTime().getTime());
         request.setPeriod(checkEndTime);
-
-        ChangeInfluenceInfo influenceInfo = req.getChangeInfluenceInfo();
-        Map<String, Object> extInfo = influenceInfo.getExtInfo();
+        ChangeExecuteInfo executeInfo = req.getChangeExecuteInfo();
+        Map<String, Object> extInfo = executeInfo.getExtInfo();
         String workloadName = String.valueOf(extInfo.getOrDefault(WORKLOAD_NAME, null));
         if (workloadName == null) {
             AlterShieldLoggerManager.log("error", Loggers.DEFENDER_PLUGIN, "MonitorMetricDetectionPlugin",
@@ -180,7 +216,7 @@ public class MonitorMetricDetectionPlugin implements DefenderAsyncDetectPlugin {
                     if (!data.containsKey(TIMESTAMP) || !data.containsKey(VALUE)) {
                         continue;
                     }
-                    series.put(data.getLong(TIMESTAMP), data.getFloatValue(VALUE));
+                    series.put(data.getLong(TIMESTAMP) * 1000, data.getFloatValue(VALUE));
                 } catch (Exception e) {
                     AlterShieldLoggerManager.log("error", Loggers.DEFENDER_PLUGIN, "MonitorMetricDetectionPlugin",
                             "invokeAlgorithmDetection", "Parse time series data got an exception", req.getNodeId(), timeSeries);
@@ -211,7 +247,7 @@ public class MonitorMetricDetectionPlugin implements DefenderAsyncDetectPlugin {
         if (result.getInteger(RESULT_CODE) != 0) {
             AlterShieldLoggerManager.log("error", Loggers.DEFENDER_PLUGIN, "MonitorMetricDetectionPlugin",
                     "invokeAlgorithmDetection", "Invoke algorithm failed", req.getNodeId(), response);
-            return DefenderDetectPluginResult.exception(result.getString(ERROR_MESSAGE));
+            return DefenderDetectPluginResult.success(false);
         }
 
         String verdict = result.getString(VERDICT);
@@ -221,6 +257,11 @@ public class MonitorMetricDetectionPlugin implements DefenderAsyncDetectPlugin {
         rst.setStatus(PASS.equalsIgnoreCase(verdict) ? DefenderStatusEnum.PASS : DefenderStatusEnum.FAIL);
         rst.setMsg(result.getString(ALGORITHM_MESSAGE));
         rst.setResultJson(response);
+
+        // defenseFinish(当超时或校验阻断时才算结束)
+        long duringTime = DateUtil.getDiffFromTwoDates(req.getChangeExecuteInfo().getChangeFinishTime(), new Date());
+        rst.setDefenseFinished(FAIL.equalsIgnoreCase(verdict) || duringTime > AlterShieldConstant.MONITOR_CHECK_MAX_BLOCK_OBSERVE_SECOND * 1000);
+
         return rst;
     }
 
@@ -445,13 +486,13 @@ public class MonitorMetricDetectionPlugin implements DefenderAsyncDetectPlugin {
     public enum MetricFieldEnum {
         CPU_UTIL("cpu_util", MetricEnum.SYSTEM_POD),
         MEM_UTIL("mem_util", MetricEnum.SYSTEM_POD),
-        LOAD_LOAD1("load_load1", MetricEnum.SYSTEM_POD),
-        LOAD_LOAD5("load_load5", MetricEnum.SYSTEM_POD),
-        LOAD_LOAD15("load_load15", MetricEnum.SYSTEM_POD),
-        FGC_COUNT("fgc_count", MetricEnum.JVM_GC_POD),
-        FGC_TIME("fgc_time", MetricEnum.JVM_GC_POD),
-        YGC_COUNT("ygc_count", MetricEnum.JVM_GC_POD),
-        YGC_TIME("ygc_time", MetricEnum.JVM_GC_POD),
+//        LOAD_LOAD1("load_load1", MetricEnum.SYSTEM_POD),
+//        LOAD_LOAD5("load_load5", MetricEnum.SYSTEM_POD),
+//        LOAD_LOAD15("load_load15", MetricEnum.SYSTEM_POD),
+//        FGC_COUNT("fgc_count", MetricEnum.JVM_GC_POD),
+//        FGC_TIME("fgc_time", MetricEnum.JVM_GC_POD),
+//        YGC_COUNT("ygc_count", MetricEnum.JVM_GC_POD),
+//        YGC_TIME("ygc_time", MetricEnum.JVM_GC_POD),
         ;
 
         private final String field;
