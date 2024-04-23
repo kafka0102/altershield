@@ -119,6 +119,9 @@ public interface MetaDefenderRuleRepository {
      */
     boolean update(MetaDefenderRuleEntity rule);
 
+
+    int deleteByRangeInfo(String rangeType, String rangeKey);
+
     /**
      * delete rule
      *

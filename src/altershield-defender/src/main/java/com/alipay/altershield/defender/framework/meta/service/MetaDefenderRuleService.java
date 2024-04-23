@@ -49,7 +49,7 @@ public interface MetaDefenderRuleService {
      * @param request 创建防御规则请求体
      * @return 创建结果
      */
-    AlterShieldResult<Boolean> createRule(CreateDefenderRuleRequest request);
+    AlterShieldResult<String> createRule(CreateDefenderRuleRequest request);
 
     /**
      * 编辑防御规则
@@ -66,5 +66,7 @@ public interface MetaDefenderRuleService {
      * @return 删除结果
      */
     AlterShieldResult<Boolean> deleteRule(String ruleId);
+
+    AlterShieldResult<Integer> deleteRules(String rangeType, String rangeKey);
 
 }

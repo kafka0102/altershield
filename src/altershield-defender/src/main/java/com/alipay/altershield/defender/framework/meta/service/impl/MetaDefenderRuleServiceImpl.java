@@ -59,7 +59,7 @@ public class MetaDefenderRuleServiceImpl extends AbstractDefenderService impleme
     private MetaDefenderRuleRepository metaDefenderRuleRepository;
 
     @Override
-    public AlterShieldResult<Boolean> createRule(CreateDefenderRuleRequest request) {
+    public AlterShieldResult<String> createRule(CreateDefenderRuleRequest request) {
         return ServiceProcessTemplate.process(() -> {
             MetaDefenderRuleEntity rule = request.convert2Entity();
             String ruleId = idGenerator.generateIdWithNoSharding(IdBizCodeEnum.OPSCLD_META_DEFENDER_RULE_ID);
@@ -67,7 +67,8 @@ public class MetaDefenderRuleServiceImpl extends AbstractDefenderService impleme
             rule.setStatus(DefenderRuleStatusEnum.DISABLED);
             rule.setGmtCreate(DateUtil.getNowDate());
             rule.setGmtModified(DateUtil.getNowDate());
-            return metaDefenderRuleRepository.insert(rule);
+            metaDefenderRuleRepository.insert(rule);
+            return ruleId;
         });
     }
 
@@ -99,5 +100,17 @@ public class MetaDefenderRuleServiceImpl extends AbstractDefenderService impleme
         }));
     }
 
-
+    @Override
+    public AlterShieldResult<Integer> deleteRules(String rangeType, String rangeKey) {
+        return ServiceProcessTemplate.process(() -> transactionTemplate.execute(status -> {
+            try {
+                return metaDefenderRuleRepository.deleteByRangeInfo(rangeType, rangeKey);
+            } catch (Exception e) {
+                AlterShieldLoggerManager.log("error", Loggers.DEFENDER, "MetaDefenderRuleServiceImpl",
+                        "deleteRules", "failed", "got an exception", e);
+                status.setRollbackOnly();
+                return 0;
+            }
+        }));
+    }
 }

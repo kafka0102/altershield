@@ -268,6 +268,15 @@ public class MetaDefenderRuleRepositoryImpl implements MetaDefenderRuleRepositor
         }
     }
 
+    @Override
+    public int deleteByRangeInfo(String rangeType, String rangeKey) {
+        MetaDefenderRuleParam param = new MetaDefenderRuleParam();
+        MetaDefenderRuleParam.Criteria criteria = param.createCriteria();
+        criteria.andDefenseRangeTypeEqualTo(rangeType);
+        criteria.andDefenseRangeKeyEqualTo(rangeKey);
+        return metaDefenderRuleMapper.deleteByParam(param);
+    }
+
     /**
      * Like
      * @param str

@@ -73,7 +73,7 @@ public class MetaDefenderRuleController {
     @ApiOperation("创建防御规则")
     @ResponseBody
     @RequestMapping(value = "/createRule", method = RequestMethod.POST)
-    public AlterShieldResult<Boolean> createRule(@NotNull @RequestBody CreateDefenderRuleRequest request) {
+    public AlterShieldResult<String> createRule(@NotNull @RequestBody CreateDefenderRuleRequest request) {
         try {
             return metaDefenderRuleService.createRule(request);
         } catch (Exception e) {
@@ -92,6 +92,19 @@ public class MetaDefenderRuleController {
         } catch (Exception e) {
             AlterShieldLoggerManager.log("error", Loggers.DEFENDER, "MetaDefenderRuleController", "queryRuleList",
                     "modify rule got an exception", e);
+            return AlterShieldResult.systemError("未知异常");
+        }
+    }
+
+    @ApiOperation("删除防御规则")
+    @ResponseBody
+    @RequestMapping(value = "/deleteRules", method = RequestMethod.DELETE)
+    public AlterShieldResult<Integer> deleteRules(@NotNull @ApiParam(value = "rangeType") @RequestParam String rangeType, @NotNull @ApiParam(value = "rangeKey") @RequestParam String rangeKey) {
+        try {
+            return metaDefenderRuleService.deleteRules(rangeType, rangeKey);
+        } catch (Exception e) {
+            AlterShieldLoggerManager.log("error", Loggers.DEFENDER, "MetaDefenderRuleController", "deleteRulesByDefenseRangeKey",
+                    "delete rule got an exception", e);
             return AlterShieldResult.systemError("未知异常");
         }
     }
