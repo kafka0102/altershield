@@ -59,7 +59,10 @@ import com.alipay.altershield.spi.defender.model.enums.DefenderStatusEnum;
 import com.alipay.altershield.spi.defender.model.request.ChangeContent;
 import com.alipay.altershield.spi.defender.model.result.DefenderDetectPluginResult;
 import org.slf4j.Logger;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -84,7 +87,7 @@ import java.util.stream.Stream;
  * @version DefenderDetectServiceImpl.java, v 0.1 2022年08月17日 4:02 下午 yhaoxuan
  */
 @Service
-public class DefenderDetectServiceImpl extends AbstractDefenderService implements DefenderDetectService {
+public class DefenderDetectServiceImpl extends AbstractDefenderService implements DefenderDetectService, ApplicationContextAware {
 
     @Autowired
     private AlterShieldSchedulerEventPublisher alterShieldSchedulerEventPublisher;
@@ -99,6 +102,14 @@ public class DefenderDetectServiceImpl extends AbstractDefenderService implement
      * Change Defense Master Log
      */
     private static final Logger DEFENDER = Loggers.DEFENDER;
+
+    // 可以全局有一个
+    private ApplicationContext applicationContext;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 
     /**
      * Synchronous execution of change defense detection entry - only available for pre-production in G1 generation
@@ -143,12 +154,17 @@ public class DefenderDetectServiceImpl extends AbstractDefenderService implement
                         "The defense rules list is empty after filtering", request.getChangeOrderId(), request.getNodeId());
                 return new AlterShieldResult<>(DefenderDetectResult.pass(detectGroupId));
             }
-
+            AlterShieldLoggerManager.log("info", DEFENDER, "DefenderDetectServiceImpl", "syncDetect",
+                    "Defense rule matching list is ", matchedRules);
             // 3.0 Schedule the execution of defense rules and create a task for each defense rule
             CountDownLatch countDownLatch = new CountDownLatch(matchedRules.size());
             List<FutureTask<DefenderDetectPluginResult>> tasks = new ArrayList<>(matchedRules.size());
             for (MetaDefenderRuleEntity rule : matchedRules) {
-                DefenderSyncDetectTask task = new DefenderSyncDetectTask(rule, detectGroupId, countDownLatch, request);
+                DefenderSyncDetectTask task = applicationContext.getBean(DefenderSyncDetectTask.class);
+                task.setRule(rule);
+                task.setRequest(request);
+                task.setDetectGroupId(detectGroupId);
+                task.setCountDownLatch(countDownLatch);
                 FutureTask<DefenderDetectPluginResult> futureTask = new FutureTask<>(task);
                 submitSyncDetect(futureTask, request, rule);
                 tasks.add(futureTask);
@@ -163,7 +179,7 @@ public class DefenderDetectServiceImpl extends AbstractDefenderService implement
             boolean success = countDownLatch.await(timeout, TimeUnit.MILLISECONDS);
             if (!success) {
                 checkPass = true;
-                return new AlterShieldResult<>(DefenderDetectResult.timeout(detectGroupId, "Defense execution timeout is greater than" + timeout + "ms"));
+                return new AlterShieldResult<>(DefenderDetectResult.timeout(detectGroupId, "Defense execution timeout is greater than " + timeout + "ms"));
             }
 
             // 5.1 Get detection results

@@ -99,19 +99,9 @@ public class ChangeSyncCheckServiceImpl implements ChangeSyncCheckService, Initi
         ExeNodeStateEnum status;
         if(!entity.isEmergency())
         {
-            long syncCheckTimeout = checkTimeOut;
-            if(syncCheckTimeout <= 0)
-            {
-                syncCheckTimeout = AlterShieldConstant.SYNC_CHNG_CHECK_TIMEOUT;
-            }
-            Future<ChangeCheckVerdict> syncCheckFuture = syncCheckThreadPool.submit(() -> doSyncCheck(changeOrder, entity));
             try {
-                verdict = syncCheckFuture.get(syncCheckTimeout, TimeUnit.MILLISECONDS);
+                verdict = doSyncCheck(changeOrder, entity);
                 status = ExeNodeStateEnum.PRE_AOP_FINISH;
-            } catch (TimeoutException e) {
-                verdict.setMsg(String.format("获取校验结果超过最大校验时间:%d", AlterShieldConstant.G1_SYNC_DECISION_TAG_TIMEOUT_MS));
-                AlterShieldLoggerManager.log("error", logger, e, "异步校验线程执行时异常", "nodeId=" + entity.getNodeExeId());
-                status = ExeNodeStateEnum.PRE_AOP_TIMEOUT;
             } catch (Exception e) {
                 //检查失败
                 verdict.setMsg("check fail, paas all");
