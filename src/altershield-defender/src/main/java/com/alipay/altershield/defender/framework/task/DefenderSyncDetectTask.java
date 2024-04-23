@@ -95,11 +95,9 @@ public class DefenderSyncDetectTask extends AbstractDefenderService implements C
         DefenderDetectPluginResult result = new DefenderDetectPluginResult();
         result.setRuleId(rule.getId());
         result.setDetectGroupId(detectGroupId);
-        result.setStatus(DefenderStatusEnum.PASS);
         try {
             // 1.0 Generate the ID of the detection record
             String detectExeId = idGenerator.generateIdByRelatedId(IdBizCodeEnum.OPSCLD_EXE_DEFENDER_DETECT_EXE_ID, detectGroupId);
-            result.setStatus(DefenderStatusEnum.PASS);
             result = executeSyncPlugin(buildDefenderTaskExecuteRequest(request, rule, detectGroupId, detectExeId));
         } catch (Throwable ex) {
             AlterShieldLoggerManager.log("error", Loggers.DEFENDER, "DefenderSyncDetectTask", "call",

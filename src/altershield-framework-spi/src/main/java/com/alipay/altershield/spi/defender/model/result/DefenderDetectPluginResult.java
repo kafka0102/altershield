@@ -28,6 +28,7 @@
 package com.alipay.altershield.spi.defender.model.result;
 
 import com.alipay.altershield.spi.defender.model.enums.DefenderStatusEnum;
+import lombok.ToString;
 
 /**
  * entity of detect task result
@@ -35,6 +36,7 @@ import com.alipay.altershield.spi.defender.model.enums.DefenderStatusEnum;
  * @author yhaoxuan
  * @version DefenderDetectPluginResult.java, v 0.1 2022年08月29日 4:22 下午 yhaoxuan
  */
+@ToString
 public class DefenderDetectPluginResult {
 
     /**
