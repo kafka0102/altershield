@@ -13,3 +13,4 @@ logs
 *.log
 .DS_Store
 .idea
+**/altershield-bootstrap/src/main/resources/*

@@ -45,6 +45,7 @@ package com.alipay.altershield.web.openapi.change.v1.exe;
 
 import com.alipay.altershield.framework.core.change.facade.HeartbeatCheck;
 import com.alipay.altershield.framework.core.change.facade.result.AlterShieldResult;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -61,6 +62,7 @@ import java.util.Map;
  * @author lex
  * @version $Id: HeartbeatController.java, v 0.1 2019年10月18日 上午10:44 lex Exp $
  */
+@Api
 @Controller
 @RequestMapping("/openapi/v1/heartbeat")
 public class HeartbeatController {

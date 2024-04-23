@@ -31,6 +31,7 @@ import com.alipay.altershield.framework.core.change.facade.result.AlterShieldRes
 import com.alipay.altershield.framework.sdk.constant.AlterShieldApiConstant;
 import com.alipay.altershield.web.change.converter.MetaChangeTypeVOConverter;
 import com.alipay.altershield.web.change.meta.vo.MetaChangeTypeVO;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.validation.Valid;
 import java.util.List;
 
+@Api
 @Controller
 @RequestMapping(AlterShieldApiConstant.metaPrefix+"change_type")
 public class OpenApiMetaChangeTypeController {

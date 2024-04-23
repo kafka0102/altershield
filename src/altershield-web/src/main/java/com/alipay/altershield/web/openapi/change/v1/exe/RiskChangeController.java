@@ -48,6 +48,7 @@ import com.alipay.altershield.framework.core.risk.facade.RiskDefenseCheckRuleFac
 import com.alipay.altershield.framework.core.risk.facade.request.QueryCheckRulesRequest;
 import com.alipay.altershield.framework.core.risk.facade.result.RiskCheckRuleResult;
 import com.alipay.altershield.framework.sdk.constant.AlterShieldApiConstant;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -60,6 +61,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author yuanji
  * @version : ExeChangeController.java, v 0.1 2022年04月11日 2:23 下午 yuanji Exp $
  */
+@Api
 @Controller
 @RequestMapping(AlterShieldApiConstant.riskPrefix)
 public class RiskChangeController {

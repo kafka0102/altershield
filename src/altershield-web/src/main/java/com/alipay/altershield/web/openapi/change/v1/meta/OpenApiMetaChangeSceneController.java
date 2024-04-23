@@ -33,6 +33,7 @@ import com.alipay.altershield.framework.core.change.facade.request.CreateMetaCha
 import com.alipay.altershield.framework.core.change.facade.result.AlterShieldResult;
 import com.alipay.altershield.framework.core.change.facade.result.CreateMetaChangeSceneResult;
 import com.alipay.altershield.framework.sdk.constant.AlterShieldApiConstant;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author yuanji
  * @version : MetaChangeSceneController.java, v 0.1 2022年06月09日 10:44 yuanji Exp $
  */
+@Api
 @Controller
 @RequestMapping(AlterShieldApiConstant.metaPrefix)
 public class OpenApiMetaChangeSceneController {

@@ -47,6 +47,7 @@ import com.alipay.altershield.framework.core.change.facade.ChangeFacade;
 import com.alipay.altershield.framework.core.change.facade.request.*;
 import com.alipay.altershield.framework.core.change.facade.result.*;
 import com.alipay.altershield.framework.sdk.constant.AlterShieldApiConstant;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -59,6 +60,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author yuanji
  * @version : ExeChangeController.java, v 0.1 2022年04月11日 2:23 下午 yuanji Exp $
  */
+@Api
 @Controller
 @RequestMapping("/openapi/v1/exe/")
 public class ExeChangeController {
