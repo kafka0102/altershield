@@ -78,6 +78,8 @@ public class PluginMarketImpl implements PluginMarket, InitializingBean {
     @Override
     public <PluginType, ResultType> AlterShieldResult<ResultType> executePlugin(String pluginKey, String mainClass, Function<PluginType, ResultType> invoker) {
         if (!allPluginEntities.containsKey(pluginKey)) {
+            AlterShieldLoggerManager.log("info", Loggers.DEFENDER, "PluginMarketImpl", "executePlugin",
+                    "error", "not found plugin ", pluginKey);
             throw new IllegalArgumentException("The corresponding plugin cannot be found" + pluginKey);
         }
         return innerPluginManager.executePlugin(pluginKey, mainClass, invoker);

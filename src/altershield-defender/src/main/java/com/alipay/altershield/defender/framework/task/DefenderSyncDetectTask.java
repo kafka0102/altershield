@@ -38,6 +38,9 @@ import com.alipay.altershield.shared.defender.entity.ExeDefenderDetectEntity;
 import com.alipay.altershield.shared.defender.request.DefenderDetectRequest;
 import com.alipay.altershield.spi.defender.model.enums.DefenderStatusEnum;
 import com.alipay.altershield.spi.defender.model.result.DefenderDetectPluginResult;
+import lombok.Data;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -48,6 +51,9 @@ import java.util.concurrent.CountDownLatch;
  * @author yhaoxuan
  * @version DefenderSyncDetectTask.java, v 0.1 2022年12月09日 11:28 上午 yhaoxuan
  */
+@Data
+@Component
+@Scope("prototype")
 public class DefenderSyncDetectTask extends AbstractDefenderService implements Callable<DefenderDetectPluginResult> {
 
     /**
@@ -70,6 +76,10 @@ public class DefenderSyncDetectTask extends AbstractDefenderService implements C
      */
     private DefenderDetectRequest request;
 
+    public DefenderSyncDetectTask() {
+
+    }
+
     public DefenderSyncDetectTask(MetaDefenderRuleEntity rule, String detectGroupId, CountDownLatch countDownLatch,
                                   DefenderDetectRequest request) {
         this.rule = rule;
@@ -82,17 +92,26 @@ public class DefenderSyncDetectTask extends AbstractDefenderService implements C
     public DefenderDetectPluginResult call() throws Exception {
         AlterShieldLoggerManager.log("info", Loggers.DEFENDER, "DefenderSyncDetectTask", "call", "start to execute rule",
                 request.getNodeId(), rule.getId());
-
-        // 1.0 Generate the ID of the detection record
-        String detectExeId = idGenerator.generateIdByRelatedId(IdBizCodeEnum.OPSCLD_EXE_DEFENDER_DETECT_EXE_ID, detectGroupId);
         DefenderDetectPluginResult result = new DefenderDetectPluginResult();
         result.setRuleId(rule.getId());
         result.setDetectGroupId(detectGroupId);
-        result = executeSyncPlugin(buildDefenderTaskExecuteRequest(request, rule, detectGroupId, detectExeId));
-
-        // 2.0 Create a detection record asynchronously
-        DefenderDetectPluginResult finalResult = result;
-        defenderThreadPool.execute(() -> {
+        result.setStatus(DefenderStatusEnum.PASS);
+        try {
+            // 1.0 Generate the ID of the detection record
+            String detectExeId = idGenerator.generateIdByRelatedId(IdBizCodeEnum.OPSCLD_EXE_DEFENDER_DETECT_EXE_ID, detectGroupId);
+            result.setStatus(DefenderStatusEnum.PASS);
+            result = executeSyncPlugin(buildDefenderTaskExecuteRequest(request, rule, detectGroupId, detectExeId));
+        } catch (Throwable ex) {
+            AlterShieldLoggerManager.log("error", Loggers.DEFENDER, "DefenderSyncDetectTask", "call",
+                    "execute rule with exception", request.getNodeId(), rule.getId(), ex);
+            result.setStatus(DefenderStatusEnum.EXCEPTION);
+        }
+        AlterShieldLoggerManager.log("info", Loggers.DEFENDER, "DefenderSyncDetectTask", "call", "done execute rule",
+                result);
+        // 此处实现不严谨
+        try {
+            // 2.0 Create a detection record asynchronously
+            DefenderDetectPluginResult finalResult = result;
             ExeDefenderDetectEntity detectRecord = createDetectEntity(request.getChangeOrderId(), request.getNodeId(),
                     detectGroupId, request.getDefenseStage(), rule);
             switch (finalResult.getStatus()) {
@@ -114,9 +133,18 @@ public class DefenderSyncDetectTask extends AbstractDefenderService implements C
                     detectRecord.setMsg("Check with an exception!");
             }
             detectRecord.setGmtFinish(DateUtil.getNowDate());
+            // 这个异常也可能丢了
             exeDefenderDetectRepository.insert(detectRecord);
-        });
-
+            AlterShieldLoggerManager.log("info", Loggers.DEFENDER, "DefenderSyncDetectTask", "call", "insert detectRecord",
+                    detectRecord);
+            // 计数不减外部调用一直是超时
+        } catch (Throwable ex) {
+            AlterShieldLoggerManager.log("error", Loggers.DEFENDER, "DefenderSyncDetectTask", "call",
+                    "insert detectRecord with exception", request.getNodeId(), rule.getId(), ex);
+            result.setStatus(DefenderStatusEnum.EXCEPTION);
+        } finally {
+            countDownLatch.countDown();
+        }
         return result;
     }
 }
