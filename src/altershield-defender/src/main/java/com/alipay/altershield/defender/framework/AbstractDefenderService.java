@@ -119,6 +119,8 @@ public abstract class AbstractDefenderService {
             DefenderDetectPluginRequest req = buildDetectPluginRequest(request);
             return detectPlugin.detect(req);
         };
+        AlterShieldLoggerManager.log("info", Loggers.DEFENDER, "AbstractDefenderService", "executeSyncPlugin",
+                "info", "start executePlugin", request.getNodeId(), request.getRuleId(), request.getPluginKey());
         AlterShieldResult<DefenderDetectPluginResult> pluginResult =
                 pluginMarket.executePlugin(request.getPluginKey(), request.getMainClass(), invoker);
         if (pluginResult == null || !pluginResult.checkSuccess()) {
