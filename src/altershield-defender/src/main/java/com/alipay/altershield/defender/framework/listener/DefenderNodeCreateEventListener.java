@@ -32,6 +32,7 @@ import com.alipay.altershield.defender.framework.AbstractDefenderService;
 import com.alipay.altershield.framework.common.util.logger.AlterShieldLoggerManager;
 import com.alipay.altershield.framework.core.change.facade.result.AlterShieldResult;
 import com.alipay.altershield.framework.core.change.model.AlterShieldChangeContent;
+import com.alipay.altershield.framework.core.change.model.enums.MetaChangeSceneGenerationEnum;
 import com.alipay.altershield.framework.core.risk.model.enums.DefenseStageEnum;
 import com.alipay.altershield.shared.change.exe.node.entity.ExeNodeEntity;
 import com.alipay.altershield.shared.change.exe.order.entity.ExeChangeOrderEntity;
@@ -95,7 +96,11 @@ public class DefenderNodeCreateEventListener extends AbstractDefenderService
                     "onEvent", "fail", "event or node id can`t be empty");
             return new AlterShieldSchedulerEventExecuteResult("参数不合法", AlterShieldScheduleEventResultStatus.ABANDON);
         }
-
+        // G0/G1没有配置回调不需要做检查
+        if (event.getGeneration() == MetaChangeSceneGenerationEnum.G0 || event.getGeneration() == MetaChangeSceneGenerationEnum.G1)
+        {
+            return AlterShieldSchedulerEventExecuteResult.success("not need process");
+        }
         // 1.0 Query change node information
         ExeNodeEntity node = exeChangeNodeService.getNode(event.getExeNodeId());
         if (node == null) {
