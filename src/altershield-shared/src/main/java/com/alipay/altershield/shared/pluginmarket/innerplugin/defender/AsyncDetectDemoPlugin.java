@@ -33,7 +33,7 @@ public class AsyncDetectDemoPlugin implements DefenderAsyncDetectPlugin {
                 "retrieveDetectResult", "receive request ", request);
         long startTime = timeMap.get(request.getNodeId());
         DefenderDetectPluginResult rst = new DefenderDetectPluginResult();
-        if (System.currentTimeMillis() - startTime < 1000 * 60) {
+        if (System.currentTimeMillis() - startTime < 1000 * 3) {
             AlterShieldLoggerManager.log("info", Loggers.DEFENDER_PLUGIN, "AsyncDetectDemoPlugin",
                     "retrieveDetectResult", "not ready ", request.getNodeId());
             rst.setDefenseFinished(false);

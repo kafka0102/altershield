@@ -136,7 +136,7 @@ public class CheckCallbackServiceImpl implements CheckCallbackService, Initializ
 
         String url = getCallbackLocation(changeSceneEntity.getCallbackConfigEntity());
         if (url == null) {
-            AlterShieldLoggerManager.log("warn", logger, "change scene callback config  not found ",
+            AlterShieldLoggerManager.log("warn", logger, "change scene callback config  not found for env " + env,
                     changeSceneEntity.getCallbackConfigEntity());
             return null;
         }

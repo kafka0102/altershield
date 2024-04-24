@@ -75,7 +75,7 @@ public class SchedulerEventDispatcherImpl implements SchedulerEventDispatcher {
     public int dispatchTask(String uid) {
         List<String> pointIdsList = retrieveEvents(uid);
         if (CollectionUtils.isEmpty(pointIdsList)) {
-            AlterShieldLoggerManager.log("info", logger, "none task found", uid);
+//            AlterShieldLoggerManager.log("info", logger, "none task found", uid);
             return 0;
         }
         return dispatchTask(pointIdsList);
@@ -184,7 +184,7 @@ public class SchedulerEventDispatcherImpl implements SchedulerEventDispatcher {
 
         //不捞取zoneName为blank的任务
         String group = alterShieldGroupService.getGroup();
-        AlterShieldLoggerManager.log("info", logger, "start retrieve task", uid,group);
+//        AlterShieldLoggerManager.log("info", logger, "start retrieve task", uid,group);
         List<String> pointIdsList = schedulePointRepository.queryTodoEventIdList(uid, new Date(), group, null, AlterShieldConstant.SCHEDULE_POINT_SINGLE_UID_LOAD_SIZE);
         return pointIdsList;
     }
