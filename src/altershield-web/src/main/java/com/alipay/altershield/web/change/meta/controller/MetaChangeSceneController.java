@@ -157,8 +157,8 @@ public class MetaChangeSceneController {
      */
     @ApiOperation(value = "删除变更场景")
     @ResponseBody
-    @RequestMapping(value = "/delete", method = RequestMethod.GET)
-    public AlterShieldResult<Boolean> removeChangeScene(@ApiParam(name = "变更场景id", required = true) @NotNull @RequestParam String id)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public AlterShieldResult<Boolean> removeChangeScene(@PathVariable String id)
     {
         return metaChangeSceneService.removeChangeScene(id);
     }

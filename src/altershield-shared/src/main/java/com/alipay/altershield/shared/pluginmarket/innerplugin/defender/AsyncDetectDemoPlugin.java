@@ -8,6 +8,7 @@ import com.alipay.altershield.spi.defender.model.enums.DefenderStatusEnum;
 import com.alipay.altershield.spi.defender.model.request.DefenderDetectPluginRequest;
 import com.alipay.altershield.spi.defender.model.result.DefenderDetectPluginResult;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AsyncDetectDemoPlugin implements DefenderAsyncDetectPlugin {
 
-    private static Map<String,Long> timeMap = new ConcurrentHashMap<>();
+    private static final Map<String,Long> timeMap = new ConcurrentHashMap<>();
     @Override
     public DefenderDetectPluginResult submitDetectTask(DefenderDetectPluginRequest request) {
         timeMap.put(request.getNodeId(),System.currentTimeMillis());
@@ -28,11 +29,15 @@ public class AsyncDetectDemoPlugin implements DefenderAsyncDetectPlugin {
 
     @Override
     public DefenderDetectPluginResult retrieveDetectResult(DefenderDetectPluginRequest request) {
+        AlterShieldLoggerManager.log("info", Loggers.DEFENDER_PLUGIN, "AsyncDetectDemoPlugin",
+                "retrieveDetectResult", "receive request ", request);
         long startTime = timeMap.get(request.getNodeId());
-        if (System.currentTimeMillis() - startTime < 1000 * 5) {
+        DefenderDetectPluginResult rst = new DefenderDetectPluginResult();
+        if (System.currentTimeMillis() - startTime < 1000 * 60) {
             AlterShieldLoggerManager.log("info", Loggers.DEFENDER_PLUGIN, "AsyncDetectDemoPlugin",
                     "retrieveDetectResult", "not ready ", request.getNodeId());
-            return DefenderDetectPluginResult.success(false);
+            rst.setDefenseFinished(false);
+            return rst;
         }
         DefenderStatusEnum status = DefenderStatusEnum.PASS;
         String message = "";
@@ -47,12 +52,13 @@ public class AsyncDetectDemoPlugin implements DefenderAsyncDetectPlugin {
                 message = "param status is failed";
             }
         }
-        DefenderDetectPluginResult rst = new DefenderDetectPluginResult();
         rst.setDefensed(true);
         rst.setDetectGroupId(request.getDetectGroupId());
         rst.setStatus(status);
         rst.setMsg(message);
-        rst.setResultJson("{}");
+        Map<String,Object> result = new HashMap<>();
+        result.put("status", status);
+        rst.setResultJson(JSONObject.toJSONString(result));
         rst.setDefenseFinished(true);
         return rst;
     }
