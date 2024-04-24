@@ -620,7 +620,7 @@
   </select>
 
   <sql id="Simple_Base_Column_List">
-    node_exe_id, uid, trace_id, order_id, coord, gmt_create, gmt_modified, status, change_scene_key,
+    node_exe_id, trace_id, order_id, coord, gmt_create, gmt_modified, status, change_scene_key,
         change_key, node_type, change_phase, msg, executor, start_time, finish_time, emergency_flag, tenant_code
   </sql>
 
@@ -636,7 +636,7 @@
     select
     <include refid="Base_Column_List"/>
     from altershield_exe_node
-    where  uid = #{uid} and order_id = #{orderId}
+    where  order_id = #{orderId}
     <if test="nodeType != null">
       and node_type = #{nodeType}
     </if>
