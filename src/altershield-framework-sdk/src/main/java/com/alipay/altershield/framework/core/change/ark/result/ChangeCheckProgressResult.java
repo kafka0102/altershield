@@ -8,5 +8,5 @@ import com.alipay.altershield.framework.core.change.facade.result.ChangeCheckVer
  */
 class ChangeCheckProgressResult {
     boolean finished;
-    ChangeCheckVerdict verdict;
+    ChangeCheckVerdict verdictResult;
 }

@@ -1,5 +1,6 @@
 package com.alipay.altershield.framework.core.change.ark.request;
 
+
 import java.util.Map;
 
 /**
@@ -8,9 +9,9 @@ import java.util.Map;
  */
 class ChangeNodeFinishRequest {
     String nodeId;
-    boolean success;
-    String message;
-    String changeResultJson;
+    String finishState; // SUCCESS, ROLLBACK, CANCEL
+    // json string
+    String changeResult;
     Map<String, Object> extInfo;
     long finishTime;
 }

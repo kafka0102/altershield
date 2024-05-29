@@ -8,5 +8,6 @@ class ChangeBatchStartRequest {
     String taskId;
     String phaseName;
     int batchNo;
+    int totalBatchNum;
     long startTime;
 }

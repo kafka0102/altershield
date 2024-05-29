@@ -9,6 +9,6 @@ import java.util.List;
 public class ChangeCheckVerdict {
     // PASS, FAIL, NONE
     String verdict;
-    String message;
-    List<ChangeCheckRule> rules;
+    List<String> failedReasons;
+    List<String> failedCodes;
 }

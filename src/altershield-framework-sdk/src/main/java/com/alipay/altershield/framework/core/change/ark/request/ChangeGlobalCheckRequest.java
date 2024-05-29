@@ -1,7 +1,5 @@
 package com.alipay.altershield.framework.core.change.ark.request;
 
-import com.alipay.altershield.framework.core.change.ark.ChangeObject;
-
 import java.util.List;
 
 /**
@@ -10,6 +8,6 @@ import java.util.List;
  */
 class ChangeGlobalCheckRequest {
     String changeSceneKey;
-    List<String> changePhases;
-    List<ChangeObject>  changeTargets;
+    String env;
+    List<String> changeTargets;
 }

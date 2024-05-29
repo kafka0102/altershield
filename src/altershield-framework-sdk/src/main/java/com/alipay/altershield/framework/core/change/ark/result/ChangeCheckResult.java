@@ -7,5 +7,5 @@ import com.alipay.altershield.framework.core.change.ark.ChangeCheckVerdict;
  * @since 2024/5/13
  */
 class ChangeCheckResult extends ChangeNodeResult {
-    ChangeCheckVerdict verdict;
+    ChangeCheckVerdict verdictResult;
 }

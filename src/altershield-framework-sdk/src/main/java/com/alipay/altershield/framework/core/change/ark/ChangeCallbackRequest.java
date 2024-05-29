@@ -7,5 +7,5 @@ package com.alipay.altershield.framework.core.change.ark;
 class ChangeCallbackRequest {
     String taskId;
     String nodeId;
-    ChangeCheckVerdict verdict;
+    ChangeCheckVerdict verdictResult;
 }

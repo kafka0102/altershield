@@ -8,5 +8,5 @@ import com.alipay.altershield.framework.core.change.ark.ChangeCheckVerdict;
  * @since 2024/5/13
  */
 class ChangeGlobalCheckResult {
-    ChangeCheckVerdict verdict;
+    ChangeCheckVerdict verdictResult;
 }
